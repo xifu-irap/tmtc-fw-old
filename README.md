@@ -1,2 +1,2 @@
 # tmtc-fw
-Communication between DRE-DEMUX and GSE firmware
+Cmmunication firmware between DRE-DEMUX and GSE
