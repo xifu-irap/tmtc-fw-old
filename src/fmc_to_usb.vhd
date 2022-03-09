@@ -332,8 +332,7 @@ architecture RTL of fmc_to_usb is
 	constant c_DAC_SPI_SER_WD_S_V : std_logic_vector(c_SPI_SER_WD_S_V_S-1 downto 0) :=
 									std_logic_vector(to_unsigned(c_DAC_SPI_SER_WD_S, c_SPI_SER_WD_S_V_S))       ; --! DAC SPI: Serial word size vector
 	--signal o_data : std_logic_vector(31 downto 0);
-	signal full_test : std_logic ;
-	signal empty_test : std_logic ;
+	signal pipe_in_data_big_endian : std_logic_vector(31 downto 0); 
 
 	component spi_mgt
 		Port( i_rst              : in     std_logic                                         ; --! Reset asynchronous assertion, synchronous de-assertion ('0' = Inactive, '1' = Active)
@@ -386,7 +385,7 @@ spi_mgt1 : spi_mgt
 	port map 
 	( i_rst        =>   rst,          
 	i_clk          =>   clk,       
-	i_spi_data_tx  =>   pipe_in_data,   
+	i_spi_data_tx  =>   pipe_in_data_big_endian,   
 	i_miso         =>   i_miso,     
 	i_fifo_empty   =>   pipe_in_empty,     
 
@@ -398,6 +397,7 @@ spi_mgt1 : spi_mgt
 	o_sync_n       =>   o_sync_n          
 );
 
+pipe_in_data_big_endian <= pipe_in_data(7 downto 0)&pipe_in_data(15 downto 8)&pipe_in_data(23 downto 16)&pipe_in_data(31 downto 24);
 
 clk_FPGA : entity work.CLK_CORE_FPGA_BOARD
 	port map 
