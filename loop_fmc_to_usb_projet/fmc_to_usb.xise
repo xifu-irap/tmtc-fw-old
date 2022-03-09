@@ -341,17 +341,17 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="183"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="72"/>
     </file>
-    <file xil_pn:name="C:/Users/xifu/Desktop/Ipvhdlpaul/pkg_project.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="189"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="58"/>
+    <file xil_pn:name="../src/pkg_project.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="194"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="194"/>
     </file>
-    <file xil_pn:name="C:/Users/xifu/Desktop/Ipvhdlpaul/spi_master.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="190"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="57"/>
+    <file xil_pn:name="../src/spi_master.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="195"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="195"/>
     </file>
-    <file xil_pn:name="C:/Users/xifu/Desktop/Ipvhdlpaul/spi_mgt.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="191"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="78"/>
+    <file xil_pn:name="../src/spi_mgt.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="196"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="196"/>
     </file>
     <file xil_pn:name="ipcore_dir/ila.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>

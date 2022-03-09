@@ -332,6 +332,8 @@ architecture RTL of fmc_to_usb is
 	constant c_DAC_SPI_SER_WD_S_V : std_logic_vector(c_SPI_SER_WD_S_V_S-1 downto 0) :=
 									std_logic_vector(to_unsigned(c_DAC_SPI_SER_WD_S, c_SPI_SER_WD_S_V_S))       ; --! DAC SPI: Serial word size vector
 	--signal o_data : std_logic_vector(31 downto 0);
+	signal full_test : std_logic ;
+	signal empty_test : std_logic ;
 
 	component spi_mgt
 		Port( i_rst              : in     std_logic                                         ; --! Reset asynchronous assertion, synchronous de-assertion ('0' = Inactive, '1' = Active)
@@ -436,6 +438,16 @@ else
 end if;
 end process;
  
+-- process(clk,reset) 
+-- begin
+--	if reset = '1' then 
+--		led <= (others => '1');
+--	elsif rising_edge(clk)
+--	then
+--		led(0) <= empty_hk;
+--		led(1) <= pipe_out_full_hk;
+--	end if ; 
+--end process ;
 ----------------------------------------------------
 --	RESET
 ----------------------------------------------------  
@@ -912,7 +924,7 @@ port map (
 	ep_datain => ep26wire
 	);	
 
---	ep26wire <= x"000000"&rd_data_count_hk;	
+	--ep26wire <= "0000000000000000000000" & rd_data_count_hk;	
 	
 ----------------------------------------------------
 --	ok wire debug
@@ -1260,6 +1272,7 @@ port map (
 	rd_data_count	=>	rd_data_count_hk --// Bus [9 : 0] 
 --	wr_data_count	=>	open--// Bus [7 : 0]
 	);  
+
 
 label_hk_pattern	:	hk_pattern   
 port map (
