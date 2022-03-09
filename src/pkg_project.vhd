@@ -32,7 +32,7 @@ package pkg_project is
 constant c_DAC_SPI_CPOL       : std_logic := '0'                                                            ; --! DAC SPI: Clock polarity
 constant c_DAC_SPI_CPHA       : std_logic := '0'                                                            ; --! DAC SPI: Clock phase
 constant c_DAC_SPI_SER_WD_S   : integer   := 32                                                             ; --! DAC SPI: Data bus size
-constant c_DAC_SPI_SCLK_L     : integer   := 2                                                               ; --! DAC SPI: Number of clock period for elaborating SPI Serial Clock low level
-constant c_DAC_SPI_SCLK_H     : integer   := 2                                                              ; --! DAC SPI: Number of clock period for elaborating SPI Serial Clock high level
+constant c_DAC_SPI_SCLK_L     : integer   := 8                                                               ; --! DAC SPI: Number of clock period for elaborating SPI Serial Clock low level
+constant c_DAC_SPI_SCLK_H     : integer   := 8                                                              ; --! DAC SPI: Number of clock period for elaborating SPI Serial Clock high level
 
 end pkg_project;

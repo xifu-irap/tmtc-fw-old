@@ -255,8 +255,8 @@ NET "i_science_data_n<6>"	LOC="A17" | IOSTANDARD="LVDS_25";
 NET "i_science_data_p<7>"	LOC="C19" | IOSTANDARD="LVDS_25";	#o_c3_science_data[1]
 NET "i_science_data_n<7>"	LOC="B19" | IOSTANDARD="LVDS_25";
 
-NET "i_miso"	LOC="H8" | IOSTANDARD="LVCMOS25";	
-NET "o_mosi"	LOC="H9" | IOSTANDARD="LVCMOS25";	
+NET "i_miso"	LOC="F19" | IOSTANDARD="LVCMOS25";	
+NET "o_mosi"	LOC="G17" | IOSTANDARD="LVCMOS25";	
 NET "o_sclk"	LOC="F8" | IOSTANDARD="LVCMOS25";		
 NET "o_sync_n"	LOC="F9" | IOSTANDARD="LVCMOS25";	
 
