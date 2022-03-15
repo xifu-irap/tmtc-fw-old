@@ -58,9 +58,7 @@ signal spi_start     : std_logic; -- Starts SPI link (Active = '1', Inactive ='0
 signal spi_tx_busy_n : std_logic; -- SPI link state (Not Busy = '1', Busy = '0')
 signal i_miso_r      : std_logic; -- Used to synchronize  i_miso
 signal i_miso_r2     : std_logic; -- Used to synchronize  i_miso
-signal read_en       : std_logic; -- Buffer for o_read_en who enables reading from Fifo
-signal spi_start_r   : std_logic; -- Delayed signal of spi_start
-signal front         : std_logic; -- (Rising edge ='1', Falling edge ='0') for read_en signal
+signal read_en       : std_logic_vector(c_SPI_PAUSE-2 downto 0); -- Used to create the delay between two communications.
 
 begin
 
@@ -79,10 +77,10 @@ begin
    (     i_rst                => i_rst                , -- in     std_logic                                 ; --! Reset asynchronous assertion, synchronous de-assertion ('0' = Inactive, '1' = Active)
          i_clk                => i_clk                , -- in     std_logic                                 ; --! Clock
 
-         i_start              => spi_start        , -- in     std_logic                                 ; --! Start transmit ('0' = Inactive, '1' = Active)
+         i_start              => spi_start        ,     -- in     std_logic                                 ; --! Start transmit ('0' = Inactive, '1' = Active)
          i_ser_wd_s           => c_DAC_SPI_SER_WD_S_V , -- in     slv(log2_ceil(g_DATA_S+1)-1 downto 0)     ; --! Serial word size
-         i_data_tx            => i_spi_data_tx      , -- in     std_logic_vector(g_DATA_S-1 downto 0)     ; --! Data to transmit (stall on MSB)
-         o_tx_busy_n          => spi_tx_busy_n    , -- out    std_logic                                 ; --! Transmit link busy ('0' = Busy, '1' = Not Busy)
+         i_data_tx            => i_spi_data_tx      ,   -- in     std_logic_vector(g_DATA_S-1 downto 0)     ; --! Data to transmit (stall on MSB)
+         o_tx_busy_n          => spi_tx_busy_n    ,     -- out    std_logic                                 ; --! Transmit link busy ('0' = Busy, '1' = Not Busy)
 
          o_data_rx            => o_data                 , -- out    std_logic_vector(g_DATA_S-1 downto 0)     ; --! Receipted data (stall on LSB)
          o_data_rx_rdy        => o_data_ready           , -- out    std_logic                                 ; --! Receipted data ready ('0' = Not ready, '1' = Ready)
@@ -98,31 +96,23 @@ begin
   begin
       if i_rst = '1'                      -- Initialisation 
       then 
-            read_en <= '0'   ;  
+            read_en <= (others => '0') ;  
             spi_start <= '0' ;
             i_miso_r  <= '0' ;
             i_miso_r2 <= '0' ;
-            spi_start <= '0' ;
-            front     <= '0' ;        
       elsif rising_edge(i_clk)
       then
-            if read_en = '0'  -- Read one value from the Fifo when the SPI link is not busy
+            if spi_tx_busy_n = '1' and read_en = (read_en'range =>'0')  and i_fifo_empty = '0' -- Read one value with the appropriate delay
             then        
-                read_en   <= spi_tx_busy_n and not i_fifo_empty and not front; 
+                  read_en <= read_en(read_en'high -1 downto 0) &  '1';  
             else
-                read_en <= '0' ;
-            end if ;
-            if not spi_start = read_en 
-            then
-               front <= read_en ;
-            end if;        
-            spi_start <= spi_start_r ; 
-            spi_start_r <= read_en ;
-				i_miso_r2 <= i_miso_r ;
-				i_miso_r  <= i_miso;
+                  read_en <= read_en(read_en'high -1 downto 0) & '0' ;
+            end if ;     
+            spi_start <= read_en(read_en'high-1) ;                                            -- Start SPI communication
+            i_miso_r2 <= i_miso_r ;                                                           -- Synchronize  i_miso
+            i_miso_r  <= i_miso;
+
       end if ;
 end process ; 
-
-o_read_en <= read_en ;
-                    
+            o_read_en <= read_en(read_en'high-1) ;                                            -- Buffer 
 end architecture RTL;
