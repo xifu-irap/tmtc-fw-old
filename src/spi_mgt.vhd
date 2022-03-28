@@ -59,6 +59,8 @@ signal spi_tx_busy_n : std_logic; -- SPI link state (Not Busy = '1', Busy = '0')
 signal i_miso_r      : std_logic; -- Used to synchronize  i_miso
 signal i_miso_r2     : std_logic; -- Used to synchronize  i_miso
 signal read_en       : std_logic_vector(c_SPI_PAUSE-2 downto 0); -- Used to create the delay between two communications.
+signal trig_first_value : std_logic; -- Used to send only correct values to the EGSE
+signal data_ready       : std_logic; -- data ready to be used from SPI point of view
 
 begin
 
@@ -83,7 +85,7 @@ begin
          o_tx_busy_n          => spi_tx_busy_n    ,     -- out    std_logic                                 ; --! Transmit link busy ('0' = Busy, '1' = Not Busy)
 
          o_data_rx            => o_data                 , -- out    std_logic_vector(g_DATA_S-1 downto 0)     ; --! Receipted data (stall on LSB)
-         o_data_rx_rdy        => o_data_ready           , -- out    std_logic                                 ; --! Receipted data ready ('0' = Not ready, '1' = Ready)
+         o_data_rx_rdy        => data_ready           , -- out    std_logic                                 ; --! Receipted data ready ('0' = Not ready, '1' = Ready)
 
          i_miso               => i_miso_r2             , -- in     std_logic                                 ; --! SPI Master Input Slave Output
          o_mosi               => o_mosi       , -- out    std_logic                                 ; --! SPI Master Output Slave Input
@@ -100,6 +102,7 @@ begin
             spi_start <= '0' ;
             i_miso_r  <= '0' ;
             i_miso_r2 <= '0' ;
+            trig_first_value <= '0';
       elsif rising_edge(i_clk)
       then
             if spi_tx_busy_n = '1' and read_en = (read_en'range =>'0')  and i_fifo_empty = '0' -- Read one value with the appropriate delay
@@ -107,7 +110,11 @@ begin
                   read_en <= read_en(read_en'high -1 downto 0) &  '1';  
             else
                   read_en <= read_en(read_en'high -1 downto 0) & '0' ;
-            end if ;     
+            end if ;   
+            if read_en(read_en'high) = '1' 
+            then
+                  trig_first_value <= '1';
+            end if;
             spi_start <= read_en(read_en'high-1) ;                                            -- Start SPI communication
             i_miso_r2 <= i_miso_r ;                                                           -- Synchronize  i_miso
             i_miso_r  <= i_miso;
@@ -115,4 +122,5 @@ begin
       end if ;
 end process ; 
             o_read_en <= read_en(read_en'high-1) ;                                            -- Buffer 
+            o_data_ready <= data_ready and trig_first_value ;
 end architecture RTL;

@@ -63,7 +63,7 @@ else
 --	le tout remultiplier par 4 pour obtenir le bon nombre de mot de 32 bit a lire (le gse remultiplie par 4 pour obtenir le nombre d'octet a lire). 
  
 	ep26wire		<= x"0000"&(rd_data_count_hk(9 downto 2) * x"04");
-		
+	
 	end if;
 end if;
 end process;

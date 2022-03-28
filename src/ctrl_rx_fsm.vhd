@@ -115,40 +115,31 @@ else
 
 	when Wait_First_start =>
 							if science_ctrl = '1' then
-							Rx_State		<=	Wait_Second_start;
-							CTRL(7)			<=	science_ctrl;	
+								Rx_State		<=	Wait_Second_start;
+								CTRL(7)			<=	science_ctrl;	
 							end if;		
 			
 	when Wait_Second_start => 	
 							if science_ctrl = '1' then
-							Rx_State 		<=	decode;
-							CTRL(6)			<=	science_ctrl;							
-							N				<=	5;
-							start_detected	<=	'1';
+								Rx_State 		<=	decode;
+								CTRL(6)			<=	science_ctrl;							
+								N				<=	5;
+								start_detected	<=	'1';
 							else
-							Rx_State 		<=	Wait_First_start;
+								Rx_State 		<=	Wait_First_start;
 							end if;		
-	
-
 	when decode =>			
 							if	N	=	0	then
-							Rx_State		<= 	Wait_First_start; 
-							start_detected	<=	'0';
-							data_ready		<=	'1';
-							CTRL(N)			<=	science_ctrl;							
+								Rx_State		<= 	Wait_First_start; 
+								start_detected	<=	'0';
+								data_ready		<=	'1';
+								CTRL(N)			<=	science_ctrl;							
 							else
-							CTRL(N)			<=	science_ctrl;
-							N	<=	N-1;
-							end if;
-							
-							
-					
-											
+								CTRL(N)			<=	science_ctrl;
+								N	<=	N-1;
+							end if;										
 	when others =>
-			
-
 	end case;
-
     end if;
 end if;
 end process;

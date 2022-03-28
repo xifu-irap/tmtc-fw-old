@@ -73,23 +73,21 @@ entity fmc_to_usb is
 
 		--	from NG-LARGE	
 		
-		clk_science_p			: 	in	STD_LOGIC;
-		clk_science_n			: 	in	STD_LOGIC;
+		clk_science_p			: 	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
+		clk_science_n			: 	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
 		
-		i_science_ctrl_p		:	in	STD_LOGIC;
-		i_science_ctrl_n		:	in	STD_LOGIC;
+		i_science_ctrl_p		:	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
+		i_science_ctrl_n		:	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
 		
-		i_science_data_p		:	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
-		i_science_data_n		:	in	STD_LOGIC_VECTOR(LinkNumber-1 downto 0);
+		i_science_data_p		:	in	STD_LOGIC_VECTOR(LignNumber-1 downto 0);
+		i_science_data_n		:	in	STD_LOGIC_VECTOR(LignNumber-1 downto 0);
 			
 		-- Paul Test -- 
 		i_miso : in std_logic ;
-		--o_read_en : out std_logic ;
-		--o_data_ready : out std_logic ;
-		--o_data : out std_logic_vector(c_DAC_SPI_SER_WD_S-1 downto 0); 
 		o_mosi : out std_logic;
 		o_sclk : out std_logic;
 		o_sync_n : out std_logic 
+
 		);
 end entity;
 
@@ -323,15 +321,13 @@ architecture RTL of fmc_to_usb is
 
 	-- Paul Part --
 
-	signal sys_clk : std_logic;
-	signal i_science_ctrl : std_logic;
-	signal clk_science : std_logic;
-	signal i_science_data : std_logic_vector(LinkNumber - 1 downto 0); 
+	signal i_science_ctrl : std_logic_vector(LinkNumber - 1 downto 0);
+	signal clk_science : std_logic_vector(LinkNumber - 1 downto 0);
+	signal i_science_data : std_logic_vector(LignNumber - 1 downto 0); 
 
 	constant c_SPI_SER_WD_S_V_S   : integer := log2_ceil(c_DAC_SPI_SER_WD_S+1)                                  ; --! DAC SPI: Serial word size vector bus size
 	constant c_DAC_SPI_SER_WD_S_V : std_logic_vector(c_SPI_SER_WD_S_V_S-1 downto 0) :=
 									std_logic_vector(to_unsigned(c_DAC_SPI_SER_WD_S, c_SPI_SER_WD_S_V_S))       ; --! DAC SPI: Serial word size vector
-	--signal o_data : std_logic_vector(31 downto 0);
 	signal pipe_in_data_big_endian : std_logic_vector(31 downto 0); 
 
 	component spi_mgt
@@ -351,35 +347,33 @@ architecture RTL of fmc_to_usb is
 	end component ;
 
 begin
- 
---LA_00_P_CC	<=  led_temp(0);
---LA_09_N		<= led_temp(0);
---LA_10_P		<= led_temp(0);
---LA_19_N		<= led_temp(0);
 
-GEN_IBUFDS : for i in 0 to LinkNumber - 1 generate
-IBUFDS_i :IBUFDS
-port map (
-      O => i_science_data(i),  -- Buffer output
-      I => i_science_data_p(i),  -- Diff_p buffer input (connect directly to top-level port)
-      IB => i_science_data_n(i) -- Diff_n buffer input (connect directly to top-level port)
-   );
+GEN_IBUFDS_science_data : for i in 0 to LignNumber - 1 generate
+	IBUFDS_i :IBUFDS
+	port map (
+		O => i_science_data(i),    -- Buffer output
+		I => i_science_data_p(i),  -- Diff_p buffer input (connect directly to top-level port)
+		IB => i_science_data_n(i)  -- Diff_n buffer input (connect directly to top-level port)
+	);
 end generate ;
 
-IBUFDS_science_ctrl : IBUFDS 
-port map (
-      O => i_science_ctrl,  -- Buffer output
-      I => i_science_ctrl_p,  -- Diff_p buffer input (connect directly to top-level port)
-      IB => i_science_ctrl_n -- Diff_n buffer input (connect directly to top-level port)
-   );
-	
-IBUFDS_clk_science : IBUFDS 
-port map (
-      O => clk_science,  -- Buffer output
-      I => clk_science_p,  -- Diff_p buffer input (connect directly to top-level port)
-      IB => clk_science_n -- Diff_n buffer input (connect directly to top-level port)
-   );
-	
+GEN_IBUFDS_science_ctrl : for i in 0 to LinkNumber - 1 generate
+	IBUFDS_science_ctrl : IBUFDS 
+	port map (
+		O => i_science_ctrl(i),    -- Buffer output
+		I => i_science_ctrl_p(i),  -- Diff_p buffer input (connect directly to top-level port)
+		IB => i_science_ctrl_n(i)  -- Diff_n buffer input (connect directly to top-level port)
+	);
+end generate ;	
+
+GEN_IBUFDS_clk_science : for i in 0 to LinkNumber - 1 generate
+	IBUFDS_clk_science : IBUFDS 
+	port map (
+		O => clk_science(i),    -- Buffer output
+		I => clk_science_p(i),  -- Diff_p buffer input (connect directly to top-level port)
+		IB => clk_science_n(i)  -- Diff_n buffer input (connect directly to top-level port)
+	);
+end generate ;	
 
 spi_mgt1 : spi_mgt
 	port map 
@@ -398,20 +392,6 @@ spi_mgt1 : spi_mgt
 );
 
 pipe_in_data_big_endian <= pipe_in_data(7 downto 0)&pipe_in_data(15 downto 8)&pipe_in_data(23 downto 16)&pipe_in_data(31 downto 24);
-
-clk_FPGA : entity work.CLK_CORE_FPGA_BOARD
-	port map 
-		(
-		-- Clock in ports
-		CLK_IN1 	=> okClk,	--	101 MHz
-		-- Clock out ports
-		CLK_OUT1 	=> clk_ng_large,	--	60 MHz
-		-- Status and control signals
-		RESET  		=> '0',
-		LOCKED 		=> open
-		); 
- 
-
  
 ----------------------------------------------------
 --	LED
@@ -419,8 +399,6 @@ clk_FPGA : entity work.CLK_CORE_FPGA_BOARD
  
 led(3 downto 0) <= led_temp;
 
---led(3) <= clk;
---clk <= sys_clk;
 process (clk, reset) begin
 if reset = '1' then
 count <= 0;
@@ -438,39 +416,12 @@ else
 end if;
 end process;
  
--- process(clk,reset) 
--- begin
---	if reset = '1' then 
---		led <= (others => '1');
---	elsif rising_edge(clk)
---	then
---		led(0) <= empty_hk;
---		led(1) <= pipe_out_full_hk;
---	end if ; 
---end process ;
 ----------------------------------------------------
 --	RESET
 ----------------------------------------------------  
  
-reset <= ep00wire(0) or rst or SYNC_OUT(0);    --or SYNC_OUT_fast(0);  
- 
--- process (rst_a, clk)
--- begin
+reset <= ep00wire(0) or rst ;     
 
-    -- if rst_a = '1' then
-
-        -- rst_meta <= '1';
-        -- reset <= '1';
-
-    -- elsif (clk'event and clk = '1') then
-
-        -- rst_meta <= '0';
-        -- reset <= rst_meta;
-
-    -- end if;
-
--- end process;
-  
 ----------------------------------------------------
 --	Controller DDR3
 ---------------------------------------------------- 
@@ -548,77 +499,14 @@ port map (
 process (okClk) begin
 	if rising_edge(okClk) then
 		if(rst_cnt < "1000") then
-		rst_cnt <= rst_cnt + 1;
-		sys_rst <= '1';
+			rst_cnt <= rst_cnt + 1;
+			sys_rst <= '1';
 		else
-		sys_rst <= '0';
+			sys_rst <= '0';
 		end if;
 	end if;
 end process;
  
-icon_inst : entity work.iCON_1
-	Port map (
-		CONTROL0 => CONTROL0
---		CONTROL1 => CONTROL1
-	 );
-
-----------------------------------------------------
---	VIO
-----------------------------------------------------
-
-vio_start_rest : entity work.vio
-port map (
-    CONTROL => CONTROL0,
-	clk     => 	clk,
-    SYNC_OUT => SYNC_OUT
-	 );
-	 
--- ----------------------------------------------------
--- --	refresh process
--- ----------------------------------------------------   
- 
--- process (clk, reset) begin
--- if reset = '1' then
--- counter_tREFI_std <= (others => '0');
--- app_ref_req <= '0';
--- app_ref_ack_received <= '1';	
--- else
-	-- if rising_edge(clk) then 
-	-- app_ref_req <= '0';
-		-- if app_ref_ack = '1' then
-		-- app_ref_ack_received <= '1';
-		-- else
-			-- if counter_tREFI_std >= tREFI_std then
-			-- app_ref_req <= '1';
-			-- app_ref_ack_received <= '0';
-			-- counter_tREFI_std <= (others => '0');
-			-- else
-				-- if app_ref_ack_received = '1' then
-				-- counter_tREFI_std <= counter_tREFI_std + '1';
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end if;
--- end if;
--- end process;
-
-	 
-----------------------------------------------------
---	VIO
-----------------------------------------------------
-
--- vio_trfi : entity work.vio
--- port map (
-    -- CONTROL => CONTROL4,
-	 -- clk     => 	clk,
-    -- SYNC_OUT => tREFI_std
-	 -- );
-
--- --tREFI <= conv_integer(tREFI_std);	 
-
-
-
-
 ----------------------------------------------------
 --	Controller DDR3
 ----------------------------------------------------
@@ -709,7 +597,6 @@ port map (
 ep23wire <= Subtraction_addr_wr_addr_rd	(31 downto 0);		
 --ep24wire <= x"00"&'0'&Subtraction_addr_wr_addr_rd	(54 downto 32);		
 
-
 -- ----------------------------------------------------
 -- manage ep20wire
 -- ----------------------------------------------------
@@ -780,23 +667,6 @@ else
 	end if;
 end if;
 end process;	
-
---------------------------------------------------
---	two domain clock processing
---------------------------------------------------
-
--- process (clk, reset) begin
--- if reset = '1' then
--- start_one	<= '0';
--- start_two	<= '0';
--- else
-	-- if rising_edge (clk) then
-	-- start_one	<= ep00wire(1);
-	-- start_two	<= start_one;
-	-- end if;
--- end if;
--- end process;
-
 
 ----------------------------------------------------
 --	ok wire host
@@ -924,8 +794,6 @@ port map (
 	ep_datain => ep26wire
 	);	
 
-	--ep26wire <= "0000000000000000000000" & rd_data_count_hk;	
-	
 ----------------------------------------------------
 --	ok wire debug
 ----------------------------------------------------
@@ -1020,109 +888,6 @@ else
 end if;
 end process;		
 	
--- -- ----------------------------------------------------
--- -- manage threshold instruement fifo
--- -- ----------------------------------------------------
-
--- label_manage_threshold : manage_threshold 
--- port map (
-		
-		-- --	global
-				
-		-- clk			=>	clk,
-		-- reset		=>	reset,	
-		
-		-- --	input
-		
-		-- prog_empty	=>	prog_empty,
-		-- prog_full	=>	prog_full,
-		
-		-- --	output
-			
-		-- before_prog_full	=>	before_prog_full,
-		-- before_prog_empty	=>	before_prog_empty	
-		
--- );
-	
-
-
-
-	
--- ---------------------------------------------------------------
--- --	start stop
--- ---------------------------------------------------------------
--- label_start_stop	:	start_stop
--- port map (
-
-		-- --	global
-				
-		-- clk					=>	clk,				
-		-- reset				=>	reset,			
-				
-		-- --	input	
-		
-		-- write_instrument	=>	pi0_ep_write,	
-		-- ack_time_out		=>	ack_time_out,	
-		
-		-- --	output
-		
-		-- time_out			=>	time_out		
-
-	-- ); 		
-
-
---------------------------------------------------------------------------------------------------------
---   science_data_tx_ok
---------------------------------------------------------------------------------------------------------
---   
---   label_science_data_tx_ok: entity work.science_data_tx_ok port map
---   (  	
---	i_rst					=>	reset,                                                      
---    i_clk					=> 	clk_ng_large_n,                                                         
---
---    i_science_data_tx_ena	=>	i_science_data_tx_ena,                                                           
---    i_science_data       	=>	ok_pattern,	                  
---    o_science_data_ser   	=>	o_science_data_ser     
---	);	
-
--------------------------------------------------------------------------------------
---	generate clock ng_large
--------------------------------------------------------------------------------------	
-
--- process (clk, reset) begin
--- if reset = '1' then
--- clk_ng_large <= '0';
--- else
-	-- if rising_edge(clk) then 
-	-- clk_ng_large <= not clk_ng_large;
-	-- end if;
--- end if;
--- end process;	
-
---clk_ng_large		<= clk;
-
---clk_ng_large_out	<= clk_ng_large; 		--	for clock science link.
---
---clk_ng_large_n		<= not clk_ng_large;	--	clock the TX.
-
------------------------------------------------------------------
-----	pattern
------------------------------------------------------------------
---label_pattern	:	entity work.pattern 
---port map (
---
---	reset                	=>	reset,	
---    clk_ng_large         	=>	clk_ng_large_n,
---		
---		
---	start_pattern			=>	start_pattern,		
---	ok_pattern				=>	ok_pattern,
---	i_science_data_tx_ena	=>	i_science_data_tx_ena         
---
---	); 
---
---start_pattern <= SYNC_OUT(1);
-	
 ---------------------------------------------------------------
 --	instrument fifo
 ---------------------------------------------------------------
@@ -1130,7 +895,7 @@ end process;
 instrument_fifo_in	:	fifo_w32_131068_r128_32728 
 port map (
 	rst		=>	reset,
-	wr_clk	=>	clk_science,
+	wr_clk	=>	clk_science(0),
 	rd_clk	=>	clk,
 	din		=>	dataout_instrument,	--	pi0_ep_dataout	for test with pipe in (small packet)
 	wr_en	=>	write_instrument,	--	pi0_ep_write	for test with pipe in (small packet)
@@ -1146,10 +911,6 @@ port map (
 	
 	
 	); 
-
-
-
---clk_instrument <= clk when SYNC_OUT_fast(31) = '0' else okClk;	
 
 reset_n <= not reset;
 	
@@ -1177,13 +938,11 @@ reset_n <= not reset;
 	--	fifo 
 	
 	dataout_instrument		=>	dataout_instrument,
-	dataout_instrument_wire	=>	dataout_instrument_wire,
 	write_instrument 		=>	write_instrument	
    
    );   
-
-data_rate_enable <= SYNC_OUT(2);   
-   
+  
+  data_rate_enable <= '1';
    -- -- ------------------------------------------------------------------------------------------------------
    -- --!   DRE	->	OK 	link
    -- -- ------------------------------------------------------------------------------------------------------
@@ -1192,27 +951,6 @@ data_rate_enable <= SYNC_OUT(2);
 					-- &i_c1_science_data_0&i_c1_science_data_1
 					-- &i_c2_science_data_0&i_c2_science_data_1
 					-- &i_c3_science_data_0&i_c3_science_data_1;  
-
-   
----------------------------------------------------------------
--- simulate data rate by counter
----------------------------------------------------------------
-
-process (okClk, reset) begin
-if reset = '1' then
-SYNC_OUT_one	<=	(others => '0'); 
-SYNC_OUT_fast	<=	(others => '0'); 
-else
-	if rising_edge (okClk) then
-	SYNC_OUT_one	<=	SYNC_OUT;	
-	SYNC_OUT_fast	<=	SYNC_OUT_one;	
-	start_stop_one <= ep00wire(2);
-	start_stop_fast <= start_stop_one;  
-	end if;
-end if;
-end process;	
-
-
 
 ---------------------------------------------------------------
 --	Pipe out fifo 
@@ -1237,22 +975,7 @@ port map (
 
 ep27wire <= "00000000000000000"&wr_data_count; 
 ep28wire <= "0000000000000000"&dataout_instrument_wire; 
-		
 	
-
--- process (okClk, reset) begin
--- if reset = '1' then
--- fifo_pipe_out_ready <= '0';
--- else
-	-- if rising_edge (okClk) then
-	-- fifo_pipe_out_ready <= '0';
-		-- if rd_data_count >= 126976 then
-		-- fifo_pipe_out_ready <= '1';
-		-- end if;
-	-- end if;
--- end if;
--- end process;	
-
 ---------------------------------------------------------------
 --	Pipe out fifo  hk
 ---------------------------------------------------------------
@@ -1273,7 +996,6 @@ port map (
 --	wr_data_count	=>	open--// Bus [7 : 0]
 	);  
 
-
 label_hk_pattern	:	hk_pattern   
 port map (
 
@@ -1285,8 +1007,6 @@ port map (
 		ep26wire			=>	ep26wire
 	
 	);  		
-
---ep28wire <= x"000000"&rd_data_count_hk;
 	
 process (okClk, reset) begin
 if reset = '1' then
@@ -1316,46 +1036,15 @@ port map (
 	rst		=>	reset,
 	wr_clk	=>	okClk,
 	rd_clk	=>	Clk,
-	din		=>	pi0_ep_dataout, --// Bus [127 : 0] 
+	din		=>	pi0_ep_dataout, --// Bus [31 : 0] 
 	wr_en	=>	pi0_ep_write,
 	rd_en	=>	pipe_in_read,
-	dout	=>	pipe_in_data, --// Bus [31 : 0] 
+	dout	=>	pipe_in_data, --// Bus [127 : 0] 
 	full	=>	open,
 	empty	=>	pipe_in_empty,
 	valid	=>	pipe_in_valid
 --	data_count	=>	open --// Bus [9 : 0] 
 --	wr_data_count	=>	open--// Bus [7 : 0]
 	);  
-
----------------------------------------------------------------
---	read fifo in and write fifo out
----------------------------------------------------------------	
-	
--- process (Clk, reset) begin
--- if reset = '1' then
--- pipe_in_read		<= '0';	
--- read_sended			<= '0';
--- pipe_out_write_hk	<= '0';
--- else
--- 	if rising_edge (Clk) then
--- 	pipe_in_read <= '0';
--- 	pipe_out_write_hk	<= '0';	
--- 		if	pipe_in_empty = '0' and pipe_in_read = '0' and read_sended = '0' and pipe_in_valid = '0' then
--- 		pipe_in_read <= '1';	
--- 		else
--- 			if pipe_in_valid = '1' and read_sended = '0' then
--- 			pipe_out_data_hk <= pipe_in_data; 	
--- 			read_sended		<= '1';
--- 			else
--- 				if	read_sended = '1' then
--- 				pipe_out_write_hk	<= '1';
--- 				read_sended			<= '0';
--- 				end if;
--- 			end if;
--- 		end if;
--- 	end if;
--- end if;
--- end process;			
-	
 	
 end RTL;
