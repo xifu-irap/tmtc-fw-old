@@ -15,4 +15,6 @@ type t_ARRAY16bits is array (natural range <>) of std_logic_vector(15 downto 0);
 type t_ARRAY8bits is array (LignNumber-1 downto 0) of std_logic_vector(7 downto 0);
 type t_ARRAY3bits is array (LignNumber-1 downto 0) of std_logic_vector(2 downto 0);
 type t_ARRAY8bits_ctrl is array ((ColNumber/2)-1 downto 0) of std_logic_vector(7 downto 0);
+type t_ARRAY96bits is array (natural range <>) of std_logic_vector(95 downto 0);
+type t_ARRAY128bits is array (natural range <>) of std_logic_vector(127 downto 0);
 end science_data_rx_package;

@@ -165,7 +165,7 @@ component fifo_w32_131068_r128_32728 port (
     rst : IN STD_LOGIC;
     wr_clk : IN STD_LOGIC;
     rd_clk : IN STD_LOGIC;
-    din : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    din : IN STD_LOGIC_VECTOR(127 DOWNTO 0);
     wr_en : IN STD_LOGIC;
     rd_en : IN STD_LOGIC;
     dout : OUT STD_LOGIC_VECTOR(127 DOWNTO 0);

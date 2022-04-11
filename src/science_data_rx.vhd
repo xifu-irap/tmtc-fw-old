@@ -16,7 +16,9 @@ entity science_data_rx is
 
 	reset_n 			: in std_logic;
 	i_clk_science 		: in std_logic_vector(LinkNumber-1 downto 0);
-	
+
+	-- test signal -- 
+	start_detected : out std_logic_vector(LinkNumber-1 downto 0);
 		
 	-- Link
 	
@@ -26,7 +28,7 @@ entity science_data_rx is
 	
 	--	fifo 
 	
-	dataout_instrument		:	out	std_logic_vector(15 downto 0);
+	dataout_instrument		:	out	std_logic_vector(127 downto 0);
 	write_instrument 		:	out	std_logic	
 
       );
@@ -40,6 +42,8 @@ signal	ctrl_out_wide			:	std_logic_vector(15 downto 0);
 
 
 signal	cpt						:	integer range 0 to 4;
+signal  cpt_fifo                :   integer;
+signal  cpt_frame               :   integer;
 signal	write_data 				:	std_logic;
 
 signal	data_out				:	t_ARRAY8bits;
@@ -55,6 +59,8 @@ signal reg_data_ready : std_logic_vector (LinkNumber-1 downto 0);
 signal reg_data_out : t_ARRAY8bits;
 signal reg_data_out_r : t_ARRAY8bits;
 signal reg_data_out_rr : t_ARRAY8bits;
+signal frame : t_ARRAY96bits(0 to 3);
+signal frame_fifo : t_ARRAY128bits (0 to 2);
 
 -- Resynchro signal --
 signal start_maker : std_logic;
@@ -89,8 +95,8 @@ begin
 						data_out 		=>	data_out(4*I+N)
 
 						);
-	end generate generate_science_data_rx_fsm_link;
-end generate generate_science_data_rx_fsm ;
+		end generate generate_science_data_rx_fsm_link;
+	end generate generate_science_data_rx_fsm ;
 
    -- ------------------------------------------------------------------------------------------------------
    --	deserialyze	CTRL and generate ready   
@@ -113,7 +119,7 @@ end generate generate_science_data_rx_fsm ;
 						i_science_ctrl	=>	i_science_ctrl(N),
 
 						-- deserialize
-	
+						start_detected  => start_detected(N),
 						CTRL			=>	CTRL(N),
 						data_ready		=>	data_ready(N)
 
@@ -124,30 +130,30 @@ end generate generate_science_data_rx_fsm ;
    --	Register to maintain the value  
    -- ------------------------------------------------------------------------------------------------------
 
-reg_generate : for N in LinkNumber-1 downto 0 generate
-   ctrl_register : process (reset_n, i_clk_science(N))
-	begin 
-		if reset_n ='0' then
-			reg_ctrl(N) <= (others =>'0');
-			reg_data_ready(N) <= '0';
-			reg_data_out(4*N) <= (others => '0');
-			reg_data_out(4*N+1) <= (others => '0');
-			reg_data_out(4*N+2) <= (others => '0');
-			reg_data_out(4*N+3) <= (others => '0');
-		elsif rising_edge(i_clk_science(N)) then
-			if data_ready(N) ='1' then
-				reg_ctrl(N) <= CTRL(N);
-				reg_data_ready(N) <= data_ready(N);
-				reg_data_out(4*N) <= data_out(4*N);
-				reg_data_out(4*N+1) <= data_out(4*N+1);
-				reg_data_out(4*N+2) <= data_out(4*N+2);
-				reg_data_out(4*N+3) <= data_out(4*N+3);
-			elsif cpt_synchro = "10" then
+	reg_generate : for N in LinkNumber-1 downto 0 generate
+	ctrl_register : process (reset_n, i_clk_science(N))
+		begin 
+			if reset_n ='0' then
+				reg_ctrl(N) <= (others =>'0');
 				reg_data_ready(N) <= '0';
+				reg_data_out(4*N) <= (others => '0');
+				reg_data_out(4*N+1) <= (others => '0');
+				reg_data_out(4*N+2) <= (others => '0');
+				reg_data_out(4*N+3) <= (others => '0');
+			elsif rising_edge(i_clk_science(N)) then
+				if data_ready(N) ='1' then
+					reg_ctrl(N) <= CTRL(N);
+					reg_data_ready(N) <= data_ready(N);
+					reg_data_out(4*N) <= data_out(4*N);
+					reg_data_out(4*N+1) <= data_out(4*N+1);
+					reg_data_out(4*N+2) <= data_out(4*N+2);
+					reg_data_out(4*N+3) <= data_out(4*N+3);
+				elsif cpt_synchro = "10" then
+					reg_data_ready(N) <= '0';
+				end if;
 			end if;
-		end if;
-	end process;
-end generate reg_generate ;
+		end process;
+	end generate reg_generate ;
 
    -- ------------------------------------------------------------------------------------------------------
    --	Resynchro
@@ -178,79 +184,42 @@ end generate reg_generate ;
 		end if;
 	end process ;
 
-   -- ------------------------------------------------------------------------------------------------------
-   --	16 bit data maker
-   -- ------------------------------------------------------------------------------------------------------	
-
-	for_generate_process: for i in 0 to ColNumber-1 generate 	
-	begin
-		process(reset_n, i_clk_science(0))
-		begin
-			if reset_n = '0' then 
-			data_out_wide_process(i) <= (others => '0');	
-			else
-				if i_clk_science(0) = '1' and i_clk_science(0)'event then
-					if	start_maker = '1' then
-						data_out_wide_process(i)	<=	reg_data_out_rr(2*i)&reg_data_out_rr(2*i+1);
-					end if;
-				end if;	
-			end if;	
-		end process;
-	end generate for_generate_process;	
-
-   -- ------------------------------------------------------------------------------------------------------
-   --	16 bit CTRL maker CTRL(0) & CTRL (1)
-   -- ------------------------------------------------------------------------------------------------------
-
-	ctrl_maker : process(reset_n, i_clk_science(0))
-	begin	
-		if reset_n ='0' then
-			ctrl_out_wide <= (others=>'0');
-		else 
-			if i_clk_science(0) = '1' and i_clk_science(0)'event then
-				if start_maker = '1' then 
-					ctrl_out_wide	<=	reg_ctrl_rr(0) & reg_ctrl_rr(1);
-				end if;
+	process(reset_n, i_clk_science(0))
+	begin 
+		if reset_n ='0' then 
+			frame 			     	<=  (others => (others => '0')) ;
+			frame_fifo		     	<=  (others => (others => '0')) ;
+			dataout_instrument		<=	(others => '0');
+			write_instrument 		<= '0';
+			write_data              <= '0';
+			cpt_frame               <= 0 ;
+			cpt_fifo                <= 0 ;
+		elsif rising_edge(i_clk_science(0)) then
+			if start_maker ='1' then 
+				cpt_frame <= cpt_frame + 1;
+				frame(cpt_frame) <= x"AAAA" & reg_ctrl_rr(0) & reg_ctrl_rr(1) & reg_data_out_rr(0) & reg_data_out_rr(1) & reg_data_out_rr(2) & reg_data_out_rr(3) & reg_data_out_rr(4) & reg_data_out_rr(5) & reg_data_out_rr(6) & reg_data_out_rr(7);
+			end if;
+			if cpt_frame = 4 then 
+				cpt_frame <= 0;
+				frame_fifo(0) <= frame(0) & frame(1)(95 downto 64);
+				frame_fifo(1) <= frame(1)(63 downto 0) & frame(2)(95 downto 32);
+				frame_fifo(2) <= frame(2)(31 downto 0) & frame(3);
+				write_data <= '1';
+			end if;
+			if write_data = '1' and cpt_fifo <3 then
+				cpt_fifo <= cpt_fifo + 1 ;
+				dataout_instrument <= frame_fifo(cpt_fifo);
+				write_instrument <='1';
+			end if;
+			if cpt_fifo = 3 then
+				write_data <= '0';
+				cpt_fifo <= 0;
+				write_instrument <='0';
 			end if;
 		end if ;
-	end process ;
-
-   -- ------------------------------------------------------------------------------------------------------
-   --	instrument fifo writer
-   -- ------------------------------------------------------------------------------------------------------
-
-process(reset_n, i_clk_science(0))
-begin
-	if reset_n = '0' then 
-	dataout_instrument		<=	(others => '0');
-	write_instrument 	<= '0';
-	cpt					<= 0;
-	write_data 			<= '0';
-	else
-		if i_clk_science(0) = '1' and i_clk_science(0)'event then
-		write_instrument 	<= '0';
-			if	start_maker = '1'  then
-			write_data 	<= '1';
-			else
-				if	write_data = '1' and cpt < ColNumber + 2 then
-					cpt	<= cpt + 1;
-					if cpt = 0 then
-						dataout_instrument	<=	x"AAAA";	--	write 16 bit data. 
-						write_instrument 	<= '1';
-					elsif cpt = 1 then
-						dataout_instrument	<=	ctrl_out_wide;	--	write 16 bit data. 
-						write_instrument 	<= '1';
-					else
-						dataout_instrument	<=	data_out_wide_process(cpt-2);	--	write 16 bit data. 
-						write_instrument 	<= '1';
-					end if ;
-				else
-				write_instrument 	<= '0';
-				cpt					<= 0;
-				write_data 			<= '0';		
-				end if;	
-			end if;
-		end if;	
-	end if;	
-end process;  
+	end process;
+	
 end RTL;
+
+
+

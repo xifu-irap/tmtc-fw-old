@@ -1,0 +1,12 @@
+D:\PAUL_ISE\tmtc-fw\loop_fmc_to_usb_projet\fmc_to_usb.ngc 1649426793
+../Front_panel_XEM7350-K160T/okWireIn.ngc 1620315264
+../Front_panel_XEM7350-K160T/okWireOut.ngc 1620315264
+../Front_panel_XEM7350-K160T/okPipeOut.ngc 1620315264
+../Front_panel_XEM7350-K160T/okPipeIn.ngc 1620315264
+ipcore_dir/fifo_r32_131068_w128_32728.ngc 1620315264
+ipcore_dir/fifo_r32_256_w32_256_hk.ngc 1620315264
+ipcore_dir/fifo_r32_256_w32_256.ngc 1620315264
+ipcore_dir/fifo_w32_131068_r128_32728.ngc 1649329701
+../Front_panel_XEM7350-K160T/okCoreHarness.ngc 1620315264
+../Front_panel_XEM7350-K160T/TFIFO64x8a_64x8b.ngc 1620315264
+OK

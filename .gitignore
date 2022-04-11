@@ -1,0 +1,10 @@
+/doc/*
+/src/Core/*
+/src/MIG/*
+/loop_fmc_to_usb_projet/*
+!/loop_fmc_to_usb_projet/ipcore_dir
+!/loop_fmc_to_usb_projet/iseconfig
+!/loop_fmc_to_usb_projet/_ngo
+!/loop_fmc_to_usb_projet/_xmsgs
+!/loop_fmc_to_usb_projet/fmc_to_usb.xise
+!/loop_fmc_to_usb_projet/fmc_to_usb.ngc

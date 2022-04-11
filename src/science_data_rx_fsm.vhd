@@ -49,11 +49,11 @@ end science_data_rx_fsm;
 
 architecture Behavioral of science_data_rx_fsm is
 
-type 	T_Rx_State is (Wait_First_start, Wait_Second_start, decode);
+	type 	T_Rx_State is (Wait_First_start, Wait_Second_start, Wait_Third_start, decode);
 signal	Rx_State 		: T_Rx_State;
 
-signal	N					:	integer range 0 to 5;
-signal	start_detected		:	std_logic;
+signal	N				:	integer range 0 to 5;
+signal	start_detected	:	std_logic;
 
 signal	science_ctrl_FFF	:	std_logic;
 signal	i_science_ctrl_FF	:	std_logic;
@@ -71,11 +71,11 @@ begin
 label_meta_ctrl: process(reset_n, i_clk_science)
 begin
 if reset_n = '0' then 
-i_science_ctrl_FF	<= '0';	
+	i_science_ctrl_FF	<= '0';	
 else
     if i_clk_science = '1' and i_clk_science'event then
-	i_science_ctrl_FF	<=	i_science_ctrl;
-	science_ctrl_FFF	<=	i_science_ctrl_FF;
+		i_science_ctrl_FF	<=	i_science_ctrl;
+		science_ctrl_FFF	<=	i_science_ctrl_FF;
     end if;
 end if;
 end process;
@@ -86,11 +86,11 @@ end process;
 label_meta_data: process(reset_n, i_clk_science)
 begin
 if reset_n = '0' then 
-i_science_data_FF	<= '0';
+	i_science_data_FF	<= '0';
 else
     if i_clk_science = '1' and i_clk_science'event then
-	i_science_data_FF	<=	i_science_data;
-	science_data_FFF	<=	i_science_data_FF;
+		i_science_data_FF	<=	i_science_data;
+		science_data_FFF	<=	i_science_data_FF;
     end if;
 end if;
 end process;
@@ -101,13 +101,13 @@ end process;
 label_data_rate: process(reset_n, i_clk_science)
 begin
 if reset_n = '0' then 
-science_ctrl		<= '0';
-science_data		<= '0';
+	science_ctrl		<= '0';
+	science_data		<= '0';
 else
     if i_clk_science = '1' and i_clk_science'event then
 		if data_rate_enable = '1' then
-		science_ctrl		<= science_ctrl_FFF;
-		science_data		<= science_data_FFF;	
+			science_ctrl		<= science_ctrl_FFF;
+			science_data		<= science_data_FFF;	
 		end if;
     end if;
 end if;
@@ -121,15 +121,13 @@ label_FSM: process(reset_n, i_clk_science)
 
 begin
 
-if reset_n = '0' then 
-	
-Rx_State		<= Wait_First_start; 
-N				<=	0;
-data_out		<= (others => '0');
-start_detected	<=	'0';
-data_ready		<=	'0';	
-CTRL			<= (others => '0');
-
+if reset_n = '0' then 	
+	Rx_State		<= Wait_First_start; 
+	N				<=	0;
+	data_out		<= (others => '0');
+	start_detected	<=	'0';
+	data_ready		<=	'0';	
+	CTRL			<= (others => '0');
 else
     if i_clk_science = '1' and i_clk_science'event then
     data_ready		<=	'0';
@@ -137,36 +135,49 @@ else
 	case Rx_State is
 
 	when Wait_First_start =>
-							if science_ctrl = '1' then
-							Rx_State		<=	Wait_Second_start;
-							data_out(7)		<=	science_data; 
-							CTRL(7)			<=	science_ctrl;	
-							end if;		
-			
-	when Wait_Second_start => 	
-							if science_ctrl = '1' then
-							Rx_State 		<=	decode;
-							data_out(6)		<=	science_data;
-							CTRL(6)			<=	science_ctrl;							
-							N				<=	5;
-							start_detected	<=	'1';
-							else
-							Rx_State 		<=	Wait_First_start;
-							end if;		
-	
+		if science_ctrl ='0' then 
+			Rx_State		<=	Wait_Second_start;
+		else
+			Rx_State		<=	Wait_First_start;
+		end if;	
+
+	when Wait_Second_start =>
+		if science_ctrl = '1' then
+			Rx_State		<=	Wait_Third_start;
+			data_out(7)		<=	science_data; 
+			CTRL(7)			<=	science_ctrl;	
+		else 
+			Rx_State		<=	Wait_Second_start;
+		end if;		
+
+	when Wait_Third_start => 	
+		if science_ctrl = '1' then
+			Rx_State 		<=	decode;
+			data_out(6)		<=	science_data;
+			CTRL(6)			<=	science_ctrl;							
+			N				<=	5;
+			start_detected	<=	'1';
+		else
+			Rx_State 		<=	Wait_Second_start;
+		end if;		
+
 
 	when decode =>			
-							if	N	=	0	then
-							Rx_State		<= Wait_First_start; 
-							start_detected	<=	'0';
-							data_ready		<=	'1';
-							data_out(N)	 	<=	science_data;
-							CTRL(N)			<=	science_ctrl;							
-							else
-							data_out(N)		 <=	science_data;
-							CTRL(N)			<=	science_ctrl;
-							N	<=	N-1;
-							end if;
+		if	N	=	0	then
+				start_detected	<=	'0';
+				data_ready		<=	'1';
+				data_out(N)	 	<=	science_data;
+				CTRL(N)			<=	science_ctrl;
+			if 	science_ctrl = '0'	then
+				Rx_State		<= Wait_Second_start;	
+			else
+				Rx_State		<= Wait_First_start;	
+			end if ;		
+		else
+			data_out(N)		 <=	science_data;
+			CTRL(N)			<=	science_ctrl;
+			N	<=	N-1;
+		end if;
 																	
 	when others =>
 			

@@ -122,7 +122,7 @@ architecture RTL of fmc_to_usb is
 	signal enable_debug				: STD_LOGIC;
 
 	signal valid_fifo_instrument: STD_LOGIC;
-	signal dataout_instrument 		: STD_LOGIC_VECTOR(15 downto 0);
+	signal dataout_instrument 		: STD_LOGIC_VECTOR(127 downto 0);
 	signal dataout_instrument_wire	: STD_LOGIC_VECTOR(15 downto 0);
 	signal write_instrument	: STD_LOGIC;
 	signal load_MSB			: STD_LOGIC;
@@ -225,7 +225,10 @@ architecture RTL of fmc_to_usb is
 
 	--	led	
 		
-	signal count				: integer;			
+	signal cpt0				    : integer;	
+	signal cpt1                 : integer;	
+	signal start_temp0			: STD_LOGIC_VECTOR(3 downto 0);	
+	signal start_temp1	        : STD_LOGIC_VECTOR(3 downto 0);	
 	signal led_temp				: STD_LOGIC_VECTOR(3 downto 0);	
 
 	--	icon et ila
@@ -322,8 +325,10 @@ architecture RTL of fmc_to_usb is
 	-- Paul Part --
 
 	signal i_science_ctrl : std_logic_vector(LinkNumber - 1 downto 0);
+	--signal i_science_ctrl_not : std_logic_vector(LinkNumber - 1 downto 0);
 	signal clk_science : std_logic_vector(LinkNumber - 1 downto 0);
 	signal i_science_data : std_logic_vector(LignNumber - 1 downto 0); 
+	signal start_detected : std_logic_vector(LinkNumber-1 downto 0);
 
 	constant c_SPI_SER_WD_S_V_S   : integer := log2_ceil(c_DAC_SPI_SER_WD_S+1)                                  ; --! DAC SPI: Serial word size vector bus size
 	constant c_DAC_SPI_SER_WD_S_V : std_logic_vector(c_SPI_SER_WD_S_V_S-1 downto 0) :=
@@ -350,6 +355,10 @@ begin
 
 GEN_IBUFDS_science_data : for i in 0 to LignNumber - 1 generate
 	IBUFDS_i :IBUFDS
+  generic map (
+	  DIFF_TERM => TRUE, -- Differential Termination 
+	  IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+	  IOSTANDARD => "DEFAULT")
 	port map (
 		O => i_science_data(i),    -- Buffer output
 		I => i_science_data_p(i),  -- Diff_p buffer input (connect directly to top-level port)
@@ -359,6 +368,10 @@ end generate ;
 
 GEN_IBUFDS_science_ctrl : for i in 0 to LinkNumber - 1 generate
 	IBUFDS_science_ctrl : IBUFDS 
+  generic map (
+	  DIFF_TERM => TRUE, -- Differential Termination 
+	  IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+	  IOSTANDARD => "DEFAULT")
 	port map (
 		O => i_science_ctrl(i),    -- Buffer output
 		I => i_science_ctrl_p(i),  -- Diff_p buffer input (connect directly to top-level port)
@@ -368,6 +381,10 @@ end generate ;
 
 GEN_IBUFDS_clk_science : for i in 0 to LinkNumber - 1 generate
 	IBUFDS_clk_science : IBUFDS 
+  generic map (
+	  DIFF_TERM => TRUE, -- Differential Termination 
+	  IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+	  IOSTANDARD => "DEFAULT")
 	port map (
 		O => clk_science(i),    -- Buffer output
 		I => clk_science_p(i),  -- Diff_p buffer input (connect directly to top-level port)
@@ -395,26 +412,53 @@ pipe_in_data_big_endian <= pipe_in_data(7 downto 0)&pipe_in_data(15 downto 8)&pi
  
 ----------------------------------------------------
 --	LED
-----------------------------------------------------   
- 
-led(3 downto 0) <= led_temp;
-
-process (clk, reset) begin
-if reset = '1' then
-count <= 0;
-else
-	if rising_edge(clk) then 
-	count <= count + 1;
-		if count = 10000000 then
+----------------------------------------------------  
+clock_science_link0 : process (clk_science(0), reset) 
+begin
+	if reset = '1' then
+		cpt0 <= 0;
+		led_temp(0) <= '1';
+		led(1)<= '1';
+	elsif rising_edge(clk_science(0)) then 
+		cpt0 <= cpt0 + 1;
+		if start_detected(0) ='1' then 
+			start_temp0 <= start_temp0 +'1';
+		end if;
+		if cpt0 = 10000000 then
+			if start_temp0 = "0000" then 
+				led(1) <= '0';
+			else 
+				led(1) <='1';
+			end if ;
 		led_temp(0) <= not led_temp(0);
-		led_temp(1) <= not led_temp(1);
-		led_temp(2) <= not led_temp(2);
-		led_temp(3) <= not led_temp(3);
-		count <= 0;
+		cpt0 <= 0;
 		end if;
 	end if;
-end if;
 end process;
+
+led(0) <= led_temp(0);
+
+clock_science_link1 : process (clk_science(1),reset)
+begin
+	if reset = '1' then 
+		cpt1 <= 0;
+		led_temp(2) <= '1';
+		led(3) <= '1';
+	elsif rising_edge(clk_science(1))then 
+		cpt1 <= cpt1 + 1 ;
+		if cpt1 = 10000000 then 
+			if start_detected(1) = '0' then 
+				led(3) <= '1';
+			else 
+				led(3) <= '0';
+			end if ;
+			led_temp(2) <= not led_temp(2);
+			cpt1 <= 0;
+		end if;
+	end if;
+end process;
+
+led(2) <= led_temp(2);
  
 ----------------------------------------------------
 --	RESET
@@ -926,6 +970,8 @@ reset_n <= not reset;
 		
 	-- Link
 	
+	start_detected     => start_detected,
+
 	i_science_ctrl		=>	i_science_ctrl,
 	i_science_data		=>	i_science_data,
 	data_rate_enable	=>	data_rate_enable,

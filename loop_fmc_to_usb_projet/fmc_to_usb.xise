@@ -281,14 +281,8 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="158"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="66"/>
     </file>
-    <file xil_pn:name="../src/manage_threshold.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="159"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
-    <file xil_pn:name="../src/start_stop.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="159"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
+    <file xil_pn:name="../src/manage_threshold.vhd" xil_pn:type="FILE_VHDL"/>
+    <file xil_pn:name="../src/start_stop.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../src/manage_pipe_out.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="160"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="63"/>
@@ -329,14 +323,8 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="180"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="61"/>
     </file>
-    <file xil_pn:name="../src/science_data_tx_ok.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="181"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
-    <file xil_pn:name="../src/pattern.vhd" xil_pn:type="FILE_VHDL">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="182"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
+    <file xil_pn:name="../src/science_data_tx_ok.vhd" xil_pn:type="FILE_VHDL"/>
+    <file xil_pn:name="../src/pattern.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="ipcore_dir/CLK_CORE_FPGA_BOARD.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="183"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
