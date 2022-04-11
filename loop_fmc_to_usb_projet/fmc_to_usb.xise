@@ -46,10 +46,6 @@
     <file xil_pn:name="../Front_panel_XEM7350-K160T/okWireOut.ngc" xil_pn:type="FILE_NGC">
       <association xil_pn:name="Implementation" xil_pn:seqID="71"/>
     </file>
-    <file xil_pn:name="ipcore_dir/ila.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="87"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
     <file xil_pn:name="ipcore_dir/vio.xco" xil_pn:type="FILE_COREGEN">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="93"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
@@ -64,14 +60,6 @@
     </file>
     <file xil_pn:name="../Front_panel_XEM7350-K160T/okPipeIn.ngc" xil_pn:type="FILE_NGC">
       <association xil_pn:name="Implementation" xil_pn:seqID="74"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/fifo_w32_256_r32_256.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="159"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/iCON_1.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="185"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="../src/MIG/ddr3_256_16.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="159"/>
@@ -281,8 +269,6 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="158"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="66"/>
     </file>
-    <file xil_pn:name="../src/manage_threshold.vhd" xil_pn:type="FILE_VHDL"/>
-    <file xil_pn:name="../src/start_stop.vhd" xil_pn:type="FILE_VHDL"/>
     <file xil_pn:name="../src/manage_pipe_out.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="160"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="63"/>
@@ -323,12 +309,6 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="180"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="61"/>
     </file>
-    <file xil_pn:name="../src/science_data_tx_ok.vhd" xil_pn:type="FILE_VHDL"/>
-    <file xil_pn:name="../src/pattern.vhd" xil_pn:type="FILE_VHDL"/>
-    <file xil_pn:name="ipcore_dir/CLK_CORE_FPGA_BOARD.xco" xil_pn:type="FILE_COREGEN">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="183"/>
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
     <file xil_pn:name="../src/pkg_project.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="194"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="50"/>
@@ -341,9 +321,6 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="196"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="59"/>
     </file>
-    <file xil_pn:name="ipcore_dir/ila.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
     <file xil_pn:name="ipcore_dir/vio.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
@@ -353,16 +330,7 @@
     <file xil_pn:name="ipcore_dir/fifo_r32_131068_w128_32728.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
-    <file xil_pn:name="ipcore_dir/fifo_w32_256_r32_256.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/iCON_1.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
     <file xil_pn:name="ipcore_dir/fifo_r32_256_w32_256_hk.xise" xil_pn:type="FILE_COREGENISE">
-      <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
-    </file>
-    <file xil_pn:name="ipcore_dir/CLK_CORE_FPGA_BOARD.xise" xil_pn:type="FILE_COREGENISE">
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
   </files>
