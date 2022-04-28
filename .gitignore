@@ -1,5 +1,2 @@
-/loop_fmc_to_usb_projet/*
-!loop_fmc_to_usb_projet/ipcore_dir/fifo_r32_256_w32_256.xco
-!loop_fmc_to_usb_projet/ipcore_dir/fifo_r32_256_w32_256_hk.xco
-!loop_fmc_to_usb_projet/ipcore_dir/fifo_r32_131068_w128_32728.xco
-!loop_fmc_to_usb_projet/ipcore_dir/fifo_w32_131068_r128_32728.xco
+ip/*
+!ip/*.xco
